@@ -62,7 +62,7 @@ function renderNoRace(meetings, driverStandings, constructorStandings) {
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px">
+    <div class="home-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px">
       <div>
         <div class="section-title">车手积分榜</div>
         ${driverStandings.slice(0, 10).map(s => driverStandingRow(s)).join('')}
@@ -112,7 +112,7 @@ function renderRaceWeekend(raceState, driverStandings, constructorStandings) {
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+    <div class="home-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
       <div>
         <div class="section-title">车手积分榜</div>
         ${driverStandings.slice(0, 5).map(s => driverStandingRow(s)).join('')}

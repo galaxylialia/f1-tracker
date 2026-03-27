@@ -113,6 +113,13 @@
   padding: var(--space-5);
 }
 
+/* ── Home two-column grid responsive ──────────── */
+@media (max-width: 767px) {
+  .home-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Responsive ───────────────────────────────── */
 @media (max-width: 1023px) {
   .split-layout {

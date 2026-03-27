@@ -18,9 +18,10 @@ if (!constructorId) {
 }
 
 async function init() {
-  const [standingsData, historyData] = await Promise.all([
+  const [standingsData, historyData, driverStandingsData] = await Promise.all([
     jolpica.getConstructorStandings(YEAR),
     jolpica.getConstructorHistory(constructorId),
+    jolpica.getDriverStandings(YEAR),
   ])
 
   const standings = standingsData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings || []
@@ -40,13 +41,9 @@ async function init() {
 
   // Current season drivers from OpenF1
   let currentDrivers = []
-  let driverStandings = []
+  const driverStandings = driverStandingsData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || []
   try {
-    const [allSessions, dsData] = await Promise.all([
-      openF1.getSessions({ year: YEAR }),
-      jolpica.getConstructorStandings(YEAR), // reuse already loaded
-    ])
-    driverStandings = dsData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || []
+    const allSessions = await openF1.getSessions({ year: YEAR })
     const latestRace = allSessions
       .filter(s => s.session_name === 'Race')
       .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0]
