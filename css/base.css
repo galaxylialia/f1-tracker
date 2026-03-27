@@ -1,0 +1,98 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+/* Numbers always mono */
+.mono { font-family: var(--font-mono); }
+
+/* Utility */
+.text-2    { color: var(--color-text-2); }
+.text-3    { color: var(--color-text-3); }
+.text-accent { color: var(--color-accent); }
+.text-gold   { color: var(--color-gold); }
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-2);
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--color-surface) 25%,
+    var(--color-surface-2) 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Fade-up animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 400ms ease forwards;
+  opacity: 0;
+}
+
+/* Stagger delays */
+.fade-up:nth-child(1)  { animation-delay: 0ms; }
+.fade-up:nth-child(2)  { animation-delay: 50ms; }
+.fade-up:nth-child(3)  { animation-delay: 100ms; }
+.fade-up:nth-child(4)  { animation-delay: 150ms; }
+.fade-up:nth-child(5)  { animation-delay: 200ms; }
+.fade-up:nth-child(6)  { animation-delay: 250ms; }
+.fade-up:nth-child(7)  { animation-delay: 300ms; }
+.fade-up:nth-child(8)  { animation-delay: 350ms; }
+.fade-up:nth-child(9)  { animation-delay: 400ms; }
+.fade-up:nth-child(10) { animation-delay: 450ms; }
+
+/* Row flash on data refresh */
+@keyframes flashRow {
+  0%   { background: rgba(255, 200, 0, 0.15); }
+  100% { background: transparent; }
+}
+
+.flash { animation: flashRow 500ms ease; }
+
+/* Pulse dot for live state */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: pulse 1.2s ease infinite;
+}
