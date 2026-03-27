@@ -1,0 +1,262 @@
+/* ── Stat tile ────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.stat-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+}
+
+.stat-tile .stat-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  display: block;
+}
+
+.stat-tile .stat-label {
+  font-size: 11px;
+  color: var(--color-text-2);
+  margin-top: var(--space-1);
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Standing row ─────────────────────────────── */
+.standing-row {
+  display: grid;
+  grid-template-columns: 28px 4px 40px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-decoration: none;
+  color: inherit;
+}
+
+.standing-row:hover { background: var(--color-surface); }
+.standing-row.active { background: var(--color-surface-2); }
+
+.standing-pos {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-text-2);
+  text-align: right;
+}
+
+.standing-color-bar {
+  width: 4px;
+  height: 32px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.standing-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-3);
+}
+
+.standing-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.standing-sub {
+  font-size: 12px;
+  color: var(--color-text-2);
+  margin-top: 1px;
+}
+
+.standing-pts {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  text-align: right;
+}
+
+/* ── Result table ─────────────────────────────── */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.result-table th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.result-table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.result-table tr:last-child td { border-bottom: none; }
+.result-table tr:hover td { background: var(--color-surface); }
+
+.result-table .mono-cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ── Card ─────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-2);
+}
+
+.card-team-bar {
+  height: 4px;
+  width: 100%;
+}
+
+.card-body { padding: var(--space-4); }
+.card-title { font-size: 16px; font-weight: 800; margin-bottom: var(--space-1); }
+.card-sub   { font-size: 12px; color: var(--color-text-2); }
+
+/* ── Tabs ─────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
+}
+
+.tab-btn {
+  padding: var(--space-3) var(--space-4);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  margin-bottom: -1px;
+}
+
+.tab-btn:hover   { color: var(--color-text); }
+.tab-btn.active  { color: var(--color-text); border-bottom-color: var(--color-accent); }
+
+/* ── Badge ────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.badge-live    { background: var(--color-accent-dim); color: var(--color-accent); }
+.badge-done    { background: rgba(255,255,255,0.06); color: var(--color-text-2); }
+.badge-next    { background: rgba(255,200,0,0.1);    color: #D4AF37; }
+
+/* ── Hero strip ───────────────────────────────── */
+.hero-strip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.hero-strip-main { flex: 1; min-width: 0; }
+.hero-strip-side { text-align: right; flex-shrink: 0; }
+
+/* ── Skeleton placeholders ────────────────────── */
+.skel-title { height: 28px; width: 60%; margin-bottom: var(--space-3); }
+.skel-text  { height: 14px; width: 100%; margin-bottom: var(--space-2); }
+.skel-text-sm { height: 14px; width: 40%; margin-bottom: var(--space-2); }
+.skel-row   { height: 52px; width: 100%; margin-bottom: var(--space-2); }
+.skel-card  { height: 120px; width: 100%; }
+
+/* ── Countdown ────────────────────────────────── */
+.countdown {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}
+
+.countdown-label {
+  font-size: 12px;
+  color: var(--color-text-2);
+  margin-top: var(--space-1);
+}
+
+/* ── Tire compound ────────────────────────────── */
+.tire {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.tire-SOFT   { background: #E8002D; color: #fff; }
+.tire-MEDIUM { background: #FFF200; color: #000; }
+.tire-HARD   { background: #FFFFFF; color: #000; }
+.tire-INTER  { background: #39B54A; color: #fff; }
+.tire-WET    { background: #0067FF; color: #fff; }
+
+/* ── Grids ────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ── Breadcrumb ───────────────────────────────── */
+.breadcrumb {
+  font-size: 13px;
+  color: var(--color-text-2);
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.breadcrumb a { color: var(--color-text-2); text-decoration: none; }
+.breadcrumb a:hover { color: var(--color-text); }
+.breadcrumb-sep { color: var(--color-text-3); }
