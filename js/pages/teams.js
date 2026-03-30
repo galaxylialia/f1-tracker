@@ -3,7 +3,7 @@ import { openF1 } from '../api/openf1.js'
 import { constructorStandingRow, skeletonRows, statGrid, triggerStatAnimations } from '../components.js'
 import { initPanel, registerPanelRenderer } from '../panel.js'
 import { YEAR } from '../state.js'
-import { initNav, countryFlag } from '../utils.js'
+import { initNav, countryFlag, nationalityFlag } from '../utils.js'
 import { getTeamInfo } from '../config/teamInfo.js'
 
 initNav('teams')
@@ -46,22 +46,16 @@ async function renderTeamPanel(constructorId, standings, el) {
   ).find(t => t.id === constructorId)
 
   const color = teamInfo?.color || '#555555'
-  const flag = countryFlag((teamInfo?.nationality || '').slice(0, 2))
+  const flag = nationalityFlag(teamInfo?.nationality)
 
-  // Get current drivers from OpenF1
+  // Get current drivers from OpenF1 latest session (avoids year-level query)
   let currentDrivers = []
   try {
-    const allSessions = await openF1.getSessions({ year: YEAR })
-    const latestRace = allSessions
-      .filter(s => s.session_name === 'Race')
-      .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0]
-    if (latestRace) {
-      const drivers = await openF1.getDrivers(latestRace.session_key)
-      currentDrivers = drivers.filter(d =>
-        getTeamInfo(d.team_name)?.id === constructorId ||
-        d.team_name === standing?.Constructor?.name
-      )
-    }
+    const drivers = await openF1.getRaceDrivers()
+    currentDrivers = drivers.filter(d =>
+      getTeamInfo(d.team_name)?.id === constructorId ||
+      d.team_name === standing?.Constructor?.name
+    )
   } catch (_) {}
 
   el.innerHTML = `

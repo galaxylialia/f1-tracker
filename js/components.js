@@ -1,4 +1,4 @@
-import { formatDate, formatTime, formatCountdown, countryFlag, formatLapTime, sessionLabel } from './utils.js'
+import { formatDate, formatTime, formatCountdown, countryFlag, venueFlag, formatLapTime, sessionLabel } from './utils.js'
 import { getTeamInfo } from './config/teamInfo.js'
 
 // ── Skeleton screens ─────────────────────────────
@@ -179,7 +179,7 @@ export function sessionBadge(session) {
 // ── Meeting card ────────────────────────────────
 
 export function meetingCard(meeting, isCurrent = false) {
-  const flag = countryFlag(meeting.country_code || '')
+  const flag = venueFlag(meeting.country_code || '')
   const date = formatDate(meeting.date_start)
   const borderStyle = isCurrent
     ? 'border-color:var(--color-accent);background:var(--color-accent-dim);' : ''

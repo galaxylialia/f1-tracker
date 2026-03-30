@@ -18,45 +18,28 @@ if (!constructorId) {
 }
 
 async function init() {
-  const [standingsData, historyData, driverStandingsData] = await Promise.all([
+  // Parallel: standings + latest drivers (avoids year-level session query which fails)
+  const [standingsData, driverStandingsData, historicStats, latestDrivers] = await Promise.all([
     jolpica.getConstructorStandings(YEAR),
-    jolpica.getConstructorHistory(constructorId),
     jolpica.getDriverStandings(YEAR),
+    jolpica.getConstructorStats(constructorId).catch(() => null),
+    openF1.getRaceDrivers(),
   ])
 
   const standings = standingsData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings || []
   const standing = standings.find(s => s.Constructor?.constructorId === constructorId)
-  const historyList = historyData?.StandingsTable?.StandingsLists || []
 
   const teamInfo = getTeamInfo(standing?.Constructor?.name) || TEAM_INFO[constructorId] || null
   const color = teamInfo?.color || '#555555'
+  const champCount = teamInfo?.championshipYears?.length || 0
 
-  const champYearsFromHistory = historyList
-    .filter(s => s.ConstructorStandings?.[0]?.position === '1')
-    .map(s => s.season)
-
-  const totalWins = historyList.reduce((sum, s) =>
-    sum + parseInt(s.ConstructorStandings?.[0]?.wins || 0), 0
-  )
-
-  // Current season drivers from OpenF1
-  let currentDrivers = []
   const driverStandings = driverStandingsData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || []
-  try {
-    const allSessions = await openF1.getSessions({ year: YEAR })
-    const latestRace = allSessions
-      .filter(s => s.session_name === 'Race')
-      .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0]
-    if (latestRace) {
-      const drivers = await openF1.getDrivers(latestRace.session_key)
-      currentDrivers = drivers.filter(d =>
-        getTeamInfo(d.team_name)?.id === constructorId ||
-        d.team_name === standing?.Constructor?.name
-      )
-    }
-  } catch (_) {}
 
-  const champCount = teamInfo?.championshipYears?.length || champYearsFromHistory.length
+  // Filter latest drivers to this team (for headshots)
+  const currentDrivers = latestDrivers.filter(d =>
+    getTeamInfo(d.team_name)?.id === constructorId ||
+    d.team_name === standing?.Constructor?.name
+  )
 
   app.innerHTML = `
     ${breadcrumb([
@@ -87,8 +70,18 @@ async function init() {
       { value: standing?.points || 0, label: '本赛季积分', animate: true },
       { value: standing?.wins || 0, label: '本赛季胜场', animate: true },
       { value: champCount, label: '车队冠军', animate: true },
-      { value: totalWins, label: '历史总胜场', animate: true },
+      { value: teamInfo?.foundedYear || '—', label: '成立年份' },
     ])}
+
+    ${historicStats ? `
+    <div class="section-title" style="margin-bottom:12px;font-size:16px">生涯数据</div>
+    ${statGrid([
+      { value: historicStats.totalRaces, label: '参赛场次', animate: true },
+      { value: historicStats.wins, label: '生涯胜场', animate: true },
+      { value: historicStats.podiums, label: '生涯领奖台', animate: true },
+      { value: historicStats.poles, label: '生涯杆位', animate: true },
+    ])}
+    ` : ''}
 
     <!-- Current drivers -->
     ${currentDrivers.length ? `
@@ -125,14 +118,19 @@ async function init() {
     <div class="section-title" style="margin-bottom:16px">历史荣誉</div>
     <div style="background:var(--color-surface);border:1px solid var(--color-border);
                 border-radius:var(--radius-lg);padding:24px;margin-bottom:32px">
-      ${statGrid([
-        { value: champCount, label: '车队冠军次数', animate: true },
-        { value: totalWins, label: '历史总胜场', animate: true },
-        { value: teamInfo?.foundedYear || '—', label: '成立年份' },
-        { value: historyList.length, label: '参赛赛季', animate: true },
-      ])}
+      ${teamInfo?.championshipYears?.length ? `
+        <div style="margin-bottom:16px">
+          <div class="label" style="margin-bottom:10px">车队冠军年份</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${teamInfo.championshipYears.map(y => `
+              <span class="badge" style="background:rgba(212,175,55,0.15);color:var(--color-gold);font-size:13px;padding:4px 10px">
+                🏆 ${y}
+              </span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
       ${teamInfo?.driverChampions?.length ? `
-        <div style="margin-top:16px">
+        <div style="margin-bottom:16px">
           <div class="label" style="margin-bottom:8px">历届冠军车手</div>
           <div style="font-size:13px;color:var(--color-text-2);line-height:2">
             ${teamInfo.driverChampions.join(' · ')}
@@ -140,7 +138,7 @@ async function init() {
         </div>
       ` : ''}
       ${teamInfo?.notableCars?.length ? `
-        <div style="margin-top:16px">
+        <div style="margin-bottom:16px">
           <div class="label" style="margin-bottom:8px">代表性赛车</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             ${teamInfo.notableCars.map(c => `<span class="badge badge-done">${c}</span>`).join('')}
@@ -148,32 +146,12 @@ async function init() {
         </div>
       ` : ''}
       ${teamInfo?.description ? `
-        <div style="margin-top:16px;font-size:13px;color:var(--color-text-2);line-height:1.7;
+        <div style="font-size:13px;color:var(--color-text-2);line-height:1.7;
                     border-top:1px solid var(--color-border);padding-top:16px">
           ${teamInfo.description}
         </div>
       ` : ''}
     </div>
-
-    <!-- Season history table -->
-    <div class="section-title" style="margin-bottom:16px">历史赛季排名</div>
-    <table class="result-table">
-      <thead><tr>
-        <th>赛季</th><th>排名</th><th class="mono-cell">积分</th><th class="mono-cell">胜场</th>
-      </tr></thead>
-      <tbody>
-        ${[...historyList].reverse().map(s => {
-          const cs = s.ConstructorStandings?.[0]
-          const isChamp = cs?.position === '1'
-          return `<tr${isChamp ? ' style="color:var(--color-gold)"' : ''}>
-            <td class="mono-cell">${s.season}</td>
-            <td class="mono-cell">${cs?.position || '—'}${isChamp ? ' 🏆' : ''}</td>
-            <td class="mono-cell">${cs?.points || '—'}</td>
-            <td class="mono-cell">${cs?.wins || '—'}</td>
-          </tr>`
-        }).join('')}
-      </tbody>
-    </table>
   `
 
   triggerStatAnimations(app)

@@ -196,6 +196,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-5);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
 }
 
 .hero-strip-main { flex: 1; min-width: 0; }

@@ -3,7 +3,7 @@ import { openF1 } from '../api/openf1.js'
 import { driverStandingRow, skeletonRows, statGrid, triggerStatAnimations, breadcrumb } from '../components.js'
 import { initPanel, registerPanelRenderer } from '../panel.js'
 import { YEAR } from '../state.js'
-import { initNav, countryFlag, getParam } from '../utils.js'
+import { initNav, countryFlag, nationalityFlag, getParam } from '../utils.js'
 import { getTeamInfo } from '../config/teamInfo.js'
 
 initNav('drivers')
@@ -53,20 +53,14 @@ async function renderDriverPanel(code, el) {
   const constructor = standing.Constructors?.[0]
   const teamInfo = getTeamInfo(constructor?.name)
   const color = teamInfo?.color || '#555555'
-  const flag = countryFlag((driver.nationality || '').slice(0, 2))
+  const flag = nationalityFlag(driver.nationality)
 
-  // Get headshot from OpenF1
+  // Get headshot from OpenF1 latest session (avoids year-level query)
   let headshotUrl = ''
   try {
-    const allSessions = await openF1.getSessions({ year: YEAR })
-    const latestRace = allSessions
-      .filter(s => s.session_name === 'Race')
-      .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0]
-    if (latestRace) {
-      const drivers = await openF1.getDrivers(latestRace.session_key)
-      const d = drivers.find(d => d.name_acronym === code.toUpperCase())
-      headshotUrl = d?.headshot_url || ''
-    }
+    const drivers = await openF1.getRaceDrivers()
+    const d = drivers.find(d => d.name_acronym === code.toUpperCase())
+    headshotUrl = d?.headshot_url || ''
   } catch (_) {}
 
   // Season results

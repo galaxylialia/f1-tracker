@@ -1,7 +1,7 @@
 import { jolpica } from '../api/jolpica.js'
 import { openF1 } from '../api/openf1.js'
 import { breadcrumb, statGrid, triggerStatAnimations, skeletonRows } from '../components.js'
-import { getParam, countryFlag, initNav } from '../utils.js'
+import { getParam, nationalityFlag, initNav } from '../utils.js'
 import { YEAR } from '../state.js'
 import { getTeamInfo } from '../config/teamInfo.js'
 
@@ -18,7 +18,13 @@ if (!driverCode) {
 }
 
 async function init() {
-  const standingsData = await jolpica.getDriverStandings(YEAR)
+  // Stage 1: standings + latest drivers in parallel
+  // Use getDrivers('latest') to avoid year-level session query (ERR_FAILED)
+  const [standingsData, latestDrivers] = await Promise.all([
+    jolpica.getDriverStandings(YEAR),
+    openF1.getRaceDrivers(),
+  ])
+
   const standings = standingsData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || []
   const standing = standings.find(s =>
     s.Driver?.code === driverCode.toUpperCase() ||
@@ -34,28 +40,17 @@ async function init() {
   const constructor = standing.Constructors?.[0]
   const teamInfo = getTeamInfo(constructor?.name)
   const color = teamInfo?.color || '#555555'
-  const flag = countryFlag((driver.nationality || '').slice(0, 2))
+  const flag = nationalityFlag(driver.nationality)
 
-  // Get headshot from OpenF1
-  let headshotUrl = ''
-  try {
-    const allSessions = await openF1.getSessions({ year: YEAR })
-    const latestRace = allSessions
-      .filter(s => s.session_name === 'Race')
-      .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0]
-    if (latestRace) {
-      const drivers = await openF1.getDrivers(latestRace.session_key)
-      const d = drivers.find(d => d.name_acronym === driverCode.toUpperCase())
-      headshotUrl = d?.headshot_url || ''
-    }
-  } catch (_) {}
+  // Stage 2: season results + career stats in parallel (headshot already fetched)
+  const [resultsData, historicStats] = await Promise.all([
+    fetch(`https://api.jolpi.ca/ergast/f1/${YEAR}/drivers/${driver.driverId}/results.json?limit=30`)
+      .then(r => r.json()).catch(() => null),
+    jolpica.getDriverStats(driver.driverId).catch(() => null),
+  ])
 
-  // Full season results
-  const resultsData = await fetch(
-    `https://api.jolpi.ca/ergast/f1/${YEAR}/drivers/${driver.driverId}/results.json?limit=30`
-  ).then(r => r.json()).catch(() => null)
+  const headshotUrl = latestDrivers.find(d => d.name_acronym === driverCode.toUpperCase())?.headshot_url || ''
   const races = resultsData?.MRData?.RaceTable?.Races || []
-
   const wins = races.filter(r => r.Results?.[0]?.position === '1').length
   const podiums = races.filter(r => parseInt(r.Results?.[0]?.position) <= 3).length
   const poles = races.filter(r => r.Results?.[0]?.grid === '1').length
@@ -95,7 +90,18 @@ async function init() {
       { value: fastestLaps, label: '最快圈', animate: true },
     ])}
 
+    ${historicStats ? `
+    <div class="section-title" style="margin-bottom:12px;font-size:16px">生涯数据</div>
+    ${statGrid([
+      { value: historicStats.totalRaces, label: '参赛场次', animate: true },
+      { value: historicStats.wins, label: '生涯胜场', animate: true },
+      { value: historicStats.podiums, label: '生涯领奖台', animate: true },
+      { value: historicStats.poles, label: '生涯杆位', animate: true },
+    ])}
+    ` : ''}
+
     <div class="section-title" style="margin-bottom:16px">本赛季各站成绩</div>
+    <div class="table-scroll">
     <table class="result-table">
       <thead><tr>
         <th>站次</th><th>比赛</th><th>排位</th><th>正赛</th><th class="mono-cell">积分</th>
@@ -121,6 +127,7 @@ async function init() {
         }).join('')}
       </tbody>
     </table>
+    </div>
   `
 
   triggerStatAnimations(app)
