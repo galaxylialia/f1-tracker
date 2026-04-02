@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     const resp = await fetch(target, { headers: { 'User-Agent': 'F1Tracker/1.0' } })
     const data = await resp.json()
     res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600')
     res.status(200).json(data)
   } catch (e) {
     res.status(500).json({ error: 'proxy error' })
